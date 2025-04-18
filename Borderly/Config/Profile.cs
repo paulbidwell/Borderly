@@ -4,11 +4,9 @@
     {
         public required string Name { get; set; }
         public string? BorderColour { get; set; }
-        public int BorderWidth { get; set; }
+        public required string BorderWidth { get; set; }
         public int Quality { get; set; }
-        public int? ResizeWidth { get; set; }
-        public int? ResizeHeight { get; set; }
-        public int? ResizeWidthPercentage { get; set; }
-        public int? ResizeHeightPercentage { get; set; }
+        public string? ResizeWidth { get; set; }
+        public string? ResizeHeight { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Borderly
 {
     public class Worker(IConfiguration config, IImageProcessor processor) : BackgroundService
     {
-        private static readonly ConcurrentDictionary<string, byte> _processingFiles = new();
+        private static readonly ConcurrentDictionary<string, byte> ProcessingFiles = new();
         private readonly Settings _settings = config.GetSection("Settings").Get<Settings>()
                         ?? throw new InvalidOperationException("Missing configuration: Settings");
 
@@ -55,7 +55,7 @@ namespace Borderly
 
         private async Task HandleFileAsync(string path)
         {
-            if (!_processingFiles.TryAdd(path, 0))
+            if (!ProcessingFiles.TryAdd(path, 0))
             {
                 return;
             }
@@ -117,7 +117,7 @@ namespace Borderly
             }
             finally
             {
-                _processingFiles.TryRemove(path, out _);
+                ProcessingFiles.TryRemove(path, out _);
             }
         }
 

@@ -13,19 +13,67 @@ namespace Borderly.Services
         {
             try
             {
-                using var image = Image.Load(inputPath) ?? throw new InvalidOperationException($"Failed to load image from {inputPath}");
+                using var image = Image.Load(inputPath)
+                    ?? throw new InvalidOperationException($"Failed to load image from {inputPath}");
 
-                var resizeWidth = profile.ResizeWidth ?? 0;
-                var resizeHeight = profile.ResizeHeight ?? 0;
+                var resizeWidth = 0;
 
-                if (profile.ResizeWidthPercentage.HasValue)
+                if (!string.IsNullOrWhiteSpace(profile.ResizeWidth))
                 {
-                    resizeWidth = image.Width * profile.ResizeWidthPercentage.Value / 100;
+                    var resizeInput = profile.ResizeWidth.Trim().ToLowerInvariant();
+                    if (resizeInput.EndsWith('%'))
+                    {
+                        if (int.TryParse(resizeInput[..^1].Trim(), out var percent))
+                        {
+                            resizeWidth = image.Width * percent / 100;
+                        }
+                        else
+                        {
+                            resizeWidth = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (resizeInput.EndsWith("px"))
+                        {
+                            resizeInput = resizeInput[..^2].Trim();
+                        }
+
+                        if (!int.TryParse(resizeInput, out resizeWidth))
+                        {
+                            resizeWidth = 0;
+                        }
+                    }
                 }
 
-                if (profile.ResizeHeightPercentage.HasValue)
+                var resizeHeight = 0;
+
+                if (!string.IsNullOrWhiteSpace(profile.ResizeHeight))
                 {
-                    resizeHeight = image.Height * profile.ResizeHeightPercentage.Value / 100;
+                    var resizeInput = profile.ResizeHeight.Trim().ToLowerInvariant();
+                    if (resizeInput.EndsWith('%'))
+                    {
+                        if (int.TryParse(resizeInput[..^1].Trim(), out var percent))
+                        {
+                            resizeHeight = image.Height * percent / 100;
+                        }
+                        else
+                        {
+                            resizeHeight = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (resizeInput.EndsWith("px"))
+                        {
+                            resizeInput = resizeInput[..^2].Trim();
+                        }
+
+                        if (!int.TryParse(resizeInput, out resizeHeight))
+                        {
+                            resizeHeight = 0;
+                        }
+                    }
                 }
 
                 if (resizeWidth > 0 || resizeHeight > 0)
@@ -44,7 +92,33 @@ namespace Borderly.Services
                 var borderColourHex = string.IsNullOrWhiteSpace(profile.BorderColour) ? "#ffffff" : profile.BorderColour;
                 var borderColour = Color.ParseHex(borderColourHex);
 
-                var borderWidth = profile.BorderWidth;
+                var borderInput = profile.BorderWidth.Trim().ToLowerInvariant();
+                int borderWidth;
+
+                if (borderInput.EndsWith('%'))
+                {
+                    if (int.TryParse(borderInput[..^1].Trim(), out var percent))
+                    {
+                        borderWidth = image.Width * percent / 100;
+                    }
+                    else
+                    {
+                        borderWidth = 0;
+                    }
+                }
+                else
+                {
+                    if (borderInput.EndsWith("px"))
+                    {
+                        borderInput = borderInput[..^2].Trim();
+                    }
+
+                    if (!int.TryParse(borderInput, out borderWidth))
+                    {
+                        borderWidth = 0;
+                    }
+                }
+
                 image.Mutate(x => x.Pad(image.Width + borderWidth * 2, image.Height + borderWidth * 2, borderColour));
 
                 var filename = Path.GetFileNameWithoutExtension(inputPath);
