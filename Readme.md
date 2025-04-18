@@ -1,12 +1,12 @@
 ﻿# Borderly
 
-Borderly watches a directory for JPEG, PNG or TIFF images, applies one or more border/resize profiles, and outputs processed files. You can optionally move or copy the original files after processing, else they will be deleted from the input directory.
+Borderly watches a directory for JPEG, PNG, or TIFF images, applies one or more border/resize profiles, and outputs processed files. Originals can be moved, copied, or deleted after processing.
 
 ---
 
 ## Configuration
 
-All options live in **appsettings.json** (or your chosen JSON config file). Example:
+All options live in **appsettings.json** (or your chosen JSON file). Example:
 
 ```json
 {
@@ -19,18 +19,16 @@ All options live in **appsettings.json** (or your chosen JSON config file). Exam
   "Profiles": [
     {
       "Name": "WhiteBorder",
-      "BorderWidth": 50,
-      "Quality": 100,
-      "ResizeWidth": 0,
-      "ResizeHeight": 0
+      "BorderWidth": "50px",
+      "Quality": 100
     },
     {
-      "Name": "BlackBorder50",
-      "BorderWidth": 50,
+      "Name": "BlackBorder5",
+      "BorderWidth": "5%",
       "BorderColour": "#000000",
-      "Quality": 100,
-      "ResizeWidthPercentage": 50,
-      "ResizeHeightPercentage": 50
+      "Quality": 50,
+      "ResizeWidth": "50%",
+      "ResizeHeight": "50%"
     }
   ]
 }
@@ -38,89 +36,79 @@ All options live in **appsettings.json** (or your chosen JSON config file). Exam
 
 ### Settings
 
-- **InputDirectory** (`string`)\
-  Directory path to watch for new JPEG files.
+- **InputDirectory** (`string`)  
+  Directory to watch for new image files (JPEG, PNG, TIFF).
 
-- **OutputDirectory** (`string`)\
-  Directory where processed images are saved. Profiles create subfolders here by their `Name`.
+- **OutputDirectory** (`string`)  
+  Directory where processed images are saved. Each profile creates its own subfolder.
 
-- **ProcessedFileOption** (`string`) — `Move` | `Copy` | `None`\
-  What to do with the original file once processed:
+- **ProcessedFileOption** (`string`) — `Move` | `Copy` | `None`  
+  What to do with originals after processing:
+  - `Move`: move into `ProcessedDirectory`.
+  - `Copy`: copy into `ProcessedDirectory`.
+  - `None`: delete from input.
 
-  - `Move`: move the original into `ProcessedDirectory`.
-  - `Copy`: copy the original into `ProcessedDirectory`.
-  - `None`: leave originals untouched.
-
-- **ProcessedDirectory** (`string`)\
-  Destination for moved/copied originals (required if `ProcessedFileOption` is `Move` or `Copy`).
+- **ProcessedDirectory** (`string`)  
+  Destination for moved/copied originals (required when `Move` or `Copy`).
 
 ### Profiles
 
 An array of profile objects; Borderly applies each profile to every image. Fields:
 
-| Field                      | Type        | Required | Default   | Description                                                          |
-| -------------------------- | ----------- | -------- | --------- | -------------------------------------------------------------------- |
-| **Name**                   | string      | ✔        | —         | Identifier; used to name subfolder and suffix output files.          |
-| **BorderWidth**            | int         | ✔        | —         | Width of the border in pixels.                                       |
-| **BorderColour**           | string      | ✘        | `#FFFFFF` | Hex or CSS colour for border.                                        |
-| **Quality**                | int (0–100) | ✔        | —         | JPEG quality for output.                                             |
-| **ResizeWidth**            | int         | ✘        | skip      | Absolute target width in pixels (0 or omitted = no absolute resize). |
-| **ResizeHeight**           | int         | ✘        | skip      | Absolute target height in pixels.                                    |
-| **ResizeWidthPercentage**  | int (0–100) | ✘        | skip      | Resize width to this percent of original.                            |
-| **ResizeHeightPercentage** | int (0–100) | ✘        | skip      | Resize height to this percent of original.                           |
+| Field            | Type          | Required | Default   | Description                                                                                                      |
+| ---------------- | ------------- | -------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Name**         | string        | ✓        | —         | Identifier; names the output subfolder and filename suffix.                                                      |
+| **BorderWidth**  | string        | ✓        | —         | Thickness: pixels (`"10px"`) or percentage (`"5%"`, if applicable based on post-resize size).                |
+| **BorderColour** | string        | ✗        | `#FFFFFF` | Hex or CSS color for the border.                                                                                 |
+| **Quality**      | int (0–100)   | ✓        | —         | JPEG quality for output (ignored for PNG/TIFF).                                                                  |
+| **ResizeWidth**  | string        | ✗        | skip      | Width as pixels (`"200px"`) or percentage (`"50%"`, based on original image size).                           |
+| **ResizeHeight** | string        | ✗        | skip      | Height as pixels or percentage.                                                                                  |
 
-> **Precedence**: Absolute (`ResizeWidth`/`ResizeHeight`) overrides percentage fields. Omit or set to 0 to skip resizing in that dimension.
+> **Note**: Percentage values for **BorderWidth** apply to the image’s final (post-resize) dimensions; percentage for **ResizeWidth**/**ResizeHeight** apply to the original image.
 
 ---
 
 ## Prerequisites
 
-- **.NET 9** SDK & runtime (tested on Windows; may work on Linux and macOS).
+- **.NET 9** SDK & runtime (tested on Windows; likely works on Linux/macOS).
 
 ---
 
 ## Building
 
-1. Clone or download the Borderly source code.
-
-2. Open a terminal and navigate to the project root (where the `.csproj` lives).
-
+1. Clone or download the source.
+2. In a terminal, navigate to the project root (where the `.csproj` resides).
 3. Run:
-
    ```bash
    dotnet build -c Release
    ```
-
 4. (Optional) Publish a self-contained build:
-
    ```bash
    dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
    ```
 
-Compiled binaries will be under `bin/Release/net9.0/` (or your target RID if publishing).
+Binaries appear under `bin/Release/net9.0/` (or your target RID).
 
 ---
 
 ## Usage
 
-1. Ensure the .NET runtime is installed.
-2. Place `Borderly.exe` (from `bin/Release/net9.0/`) and `appsettings.json` side by side.
-3. Edit `appsettings.json` to configure your directories and profiles.
+1. Install the .NET runtime if needed.
+2. Place `Borderly.exe` (from `bin/Release/net9.0/`) and `appsettings.json` together.
+3. Edit `appsettings.json` as desired.
 4. Run:
    ```bash
    Borderly.exe
    ```
-   Or install it as a Windows Service:
+   Or install as a Windows Service:
    ```powershell
    sc create Borderly binPath= "C:\path\to\Borderly.exe"
    sc start Borderly
    ```
 
-Processed images appear under:
-
+Processed files live in:
 ```
-<OutputDirectory>\<ProfileName>\<OriginalFileName>_<ProfileName>.jpg
+<OutputDirectory>\<ProfileName>\<OriginalName>_<ProfileName>.jpg
 ```
 
-Original files will be moved or copied to `ProcessedDirectory` if that option is enabled.
-
+Originals move or copy into `ProcessedDirectory` if enabled.
